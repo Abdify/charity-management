@@ -29,6 +29,7 @@ const AddDonorScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [location, setLocation] = useState('');
   const [notes, setNotes] = useState('');
+  const [order, setOrder] = useState('');
   const [status, setStatus] = useState<DonorStatus>(DonorStatus.ACTIVE);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
@@ -39,9 +40,16 @@ const AddDonorScreen = () => {
       setPhoneNumber(existingDonor.phoneNumber);
       setLocation(existingDonor.location);
       setNotes(existingDonor.notes || '');
+      setOrder(existingDonor.order?.toString() || '');
       setStatus(existingDonor.status);
+    } else {
+      // Auto-generate order for new donors
+      const maxOrder = donors.length > 0
+        ? Math.max(...donors.map(d => d.order || 0))
+        : 0;
+      setOrder((maxOrder + 1).toString());
     }
-  }, [existingDonor]);
+  }, [existingDonor, donors]);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -56,6 +64,12 @@ const AddDonorScreen = () => {
 
     if (!location.trim()) {
       newErrors.location = 'Location is required';
+    }
+
+    if (!order.trim()) {
+      newErrors.order = 'Order is required';
+    } else if (isNaN(Number(order)) || Number(order) < 1) {
+      newErrors.order = 'Please enter a valid order number (1 or greater)';
     }
 
     setErrors(newErrors);
@@ -75,6 +89,7 @@ const AddDonorScreen = () => {
           phoneNumber: phoneNumber.trim(),
           location: location.trim(),
           notes: notes.trim() || undefined,
+          order: Number(order),
           status,
         });
       } else {
@@ -83,6 +98,7 @@ const AddDonorScreen = () => {
           phoneNumber: phoneNumber.trim(),
           location: location.trim(),
           notes: notes.trim() || undefined,
+          order: Number(order),
           status,
         });
       }
@@ -144,6 +160,15 @@ const AddDonorScreen = () => {
         onChangeText={setLocation}
         placeholder="Enter location"
         error={errors.location}
+      />
+
+      <Input
+        label="Order *"
+        value={order}
+        onChangeText={setOrder}
+        placeholder="Enter display order"
+        keyboardType="numeric"
+        error={errors.order}
       />
 
       <Input

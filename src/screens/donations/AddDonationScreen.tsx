@@ -15,7 +15,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useApp } from '../../contexts/AppContext';
 import { Input, Button, Card } from '../../components';
-import { RootStackParamList, Donor, Project } from '../../types';
+import { RootStackParamList, Donor, Project, DonationType } from '../../types';
 import { formatCurrency } from '../../utils/helpers';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -28,6 +28,8 @@ const AddDonationScreen = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date());
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [showMonthModal, setShowMonthModal] = useState(false);
   const [notes, setNotes] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showDonorModal, setShowDonorModal] = useState(false);
@@ -42,6 +44,21 @@ const AddDonationScreen = () => {
   const activeProjects = useMemo(() => {
     return projects.filter((p) => p.status === 'active');
   }, [projects]);
+
+  // Generate list of months for monthly donations (current month and next 11 months)
+  const monthOptions = useMemo(() => {
+    const months = [];
+    const today = new Date();
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(today.getFullYear(), today.getMonth() + i, 1);
+      const monthStr = date.toISOString().substring(0, 7); // YYYY-MM format
+      const monthDisplay = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      months.push({ value: monthStr, label: monthDisplay });
+    }
+    return months;
+  }, []);
+
+  const isMonthlyProject = selectedProject?.donationType === DonationType.MONTHLY;
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -58,6 +75,11 @@ const AddDonationScreen = () => {
       newErrors.amount = 'Amount is required';
     } else if (isNaN(Number(amount)) || Number(amount) <= 0) {
       newErrors.amount = 'Please enter a valid amount';
+    }
+
+    // Check month for monthly donations
+    if (isMonthlyProject && !selectedMonth) {
+      newErrors.month = 'Please select a month for monthly donation';
     }
 
     setErrors(newErrors);
@@ -80,6 +102,7 @@ const AddDonationScreen = () => {
         projectId: selectedProject.id,
         amount: Number(amount),
         date: date.toISOString(),
+        month: isMonthlyProject ? selectedMonth : undefined,
         notes: notes.trim() || undefined,
       });
 
@@ -93,6 +116,7 @@ const AddDonationScreen = () => {
             setAmount('');
             setNotes('');
             setDate(new Date());
+            setSelectedMonth('');
             setErrors({});
           },
         },
@@ -182,9 +206,18 @@ const AddDonationScreen = () => {
                   setSelectedProject(item);
                   setShowProjectModal(false);
                   setErrors({ ...errors, project: '' });
+                  // Reset month when changing project
+                  if (item.donationType === DonationType.MONTHLY) {
+                    setSelectedMonth(monthOptions[0].value);
+                  } else {
+                    setSelectedMonth('');
+                  }
                 }}
               >
-                <Text style={styles.modalItemName}>{item.name}</Text>
+                <Text style={styles.modalItemName}>
+                  {item.name}
+                  {item.donationType === DonationType.MONTHLY && ' (Monthly)'}
+                </Text>
                 <Text style={styles.modalItemDetail}>
                   {formatCurrency(item.currentAmount)} / {formatCurrency(item.targetAmount)}
                 </Text>
@@ -202,6 +235,42 @@ const AddDonationScreen = () => {
             }}
             variant="secondary"
             style={styles.modalButton}
+          />
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const MonthModal = () => (
+    <Modal
+      visible={showMonthModal}
+      transparent
+      animationType="slide"
+      onRequestClose={() => setShowMonthModal(false)}
+    >
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Month</Text>
+            <TouchableOpacity onPress={() => setShowMonthModal(false)}>
+              <Text style={styles.closeButton}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={monthOptions}
+            keyExtractor={(item) => item.value}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.modalItem}
+                onPress={() => {
+                  setSelectedMonth(item.value);
+                  setShowMonthModal(false);
+                  setErrors({ ...errors, month: '' });
+                }}
+              >
+                <Text style={styles.modalItemName}>{item.label}</Text>
+              </TouchableOpacity>
+            )}
           />
         </View>
       </View>
@@ -266,6 +335,29 @@ const AddDonationScreen = () => {
         error={errors.amount}
       />
 
+      {/* Month (only for monthly projects) */}
+      {isMonthlyProject && (
+        <View style={styles.section}>
+          <Text style={styles.label}>Month *</Text>
+          <TouchableOpacity
+            style={[
+              styles.selectionButton,
+              errors.month ? styles.selectionButtonError : null,
+            ]}
+            onPress={() => setShowMonthModal(true)}
+          >
+            {selectedMonth ? (
+              <Text style={styles.selectedText}>
+                {monthOptions.find(m => m.value === selectedMonth)?.label || selectedMonth}
+              </Text>
+            ) : (
+              <Text style={styles.placeholderText}>Select donation month</Text>
+            )}
+          </TouchableOpacity>
+          {errors.month && <Text style={styles.errorText}>{errors.month}</Text>}
+        </View>
+      )}
+
       {/* Date */}
       <View style={styles.section}>
         <Text style={styles.label}>Date *</Text>
@@ -325,6 +417,7 @@ const AddDonationScreen = () => {
 
       <DonorModal />
       <ProjectModal />
+      <MonthModal />
     </ScrollView>
   );
 };

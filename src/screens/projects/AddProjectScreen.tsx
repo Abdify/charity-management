@@ -13,7 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useApp } from '../../contexts/AppContext';
 import { Input, Button } from '../../components';
-import { RootStackParamList, ProjectStatus } from '../../types';
+import { RootStackParamList, ProjectStatus, DonationType } from '../../types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type AddProjectRouteProp = RouteProp<RootStackParamList, 'AddProject'>;
@@ -35,6 +35,7 @@ const AddProjectScreen = () => {
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [status, setStatus] = useState<ProjectStatus>(ProjectStatus.ACTIVE);
+  const [donationType, setDonationType] = useState<DonationType>(DonationType.ONE_TIME);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(false);
 
@@ -46,6 +47,7 @@ const AddProjectScreen = () => {
       setStartDate(new Date(existingProject.startDate));
       setEndDate(existingProject.endDate ? new Date(existingProject.endDate) : undefined);
       setStatus(existingProject.status);
+      setDonationType(existingProject.donationType || DonationType.ONE_TIME);
     }
   }, [existingProject]);
 
@@ -85,6 +87,7 @@ const AddProjectScreen = () => {
           startDate: startDate.toISOString(),
           endDate: endDate?.toISOString(),
           status,
+          donationType,
         });
       } else {
         await addProject({
@@ -94,6 +97,7 @@ const AddProjectScreen = () => {
           startDate: startDate.toISOString(),
           endDate: endDate?.toISOString(),
           status,
+          donationType,
         });
       }
       navigation.goBack();
@@ -218,6 +222,45 @@ const AddProjectScreen = () => {
         )}
       </View>
 
+      {/* Donation Type */}
+      <View style={styles.statusContainer}>
+        <Text style={styles.label}>Donation Type *</Text>
+        <View style={styles.donationTypeButtons}>
+          <TouchableOpacity
+            style={[
+              styles.statusButton,
+              donationType === DonationType.ONE_TIME && styles.statusButtonActive,
+            ]}
+            onPress={() => setDonationType(DonationType.ONE_TIME)}
+          >
+            <Text
+              style={[
+                styles.statusButtonText,
+                donationType === DonationType.ONE_TIME && styles.statusButtonTextActive,
+              ]}
+            >
+              One-time
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.statusButton,
+              donationType === DonationType.MONTHLY && styles.statusButtonActive,
+            ]}
+            onPress={() => setDonationType(DonationType.MONTHLY)}
+          >
+            <Text
+              style={[
+                styles.statusButtonText,
+                donationType === DonationType.MONTHLY && styles.statusButtonTextActive,
+              ]}
+            >
+              Monthly
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* Status */}
       <View style={styles.statusContainer}>
         <Text style={styles.label}>Status</Text>
@@ -334,6 +377,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   statusButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  donationTypeButtons: {
     flexDirection: 'row',
     gap: 8,
   },

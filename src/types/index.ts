@@ -11,12 +11,18 @@ export enum ProjectStatus {
   ON_HOLD = 'on_hold',
 }
 
+export enum DonationType {
+  ONE_TIME = 'one_time',
+  MONTHLY = 'monthly',
+}
+
 export interface Donor {
   id: string;
   name: string;
   phoneNumber: string;
   location: string;
   status: DonorStatus;
+  order: number;
   createdAt: string;
   updatedAt: string;
   notes?: string;
@@ -29,6 +35,7 @@ export interface Project {
   targetAmount: number;
   currentAmount: number;
   status: ProjectStatus;
+  donationType: DonationType;
   createdAt: string;
   updatedAt: string;
   startDate: string;
@@ -41,6 +48,7 @@ export interface Donation {
   projectId: string;
   amount: number;
   date: string;
+  month?: string; // Format: YYYY-MM, only for monthly donations
   notes?: string;
   createdAt: string;
   updatedAt: string;

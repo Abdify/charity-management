@@ -79,9 +79,15 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   // Donor operations
   const addDonor = async (donorData: Omit<Donor, 'id' | 'createdAt' | 'updatedAt'>) => {
+    // Auto-generate order: find max order and add 1
+    const maxOrder = donors.length > 0
+      ? Math.max(...donors.map(d => d.order || 0))
+      : 0;
+
     const newDonor: Donor = {
       ...donorData,
       id: generateId(),
+      order: donorData.order !== undefined ? donorData.order : maxOrder + 1,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
