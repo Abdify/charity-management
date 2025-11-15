@@ -220,7 +220,8 @@ const DashboardScreen = () => {
             <Text style={styles.sectionTitle}>{t('recentDonations')}</Text>
           </View>
           {donations.length > 0 && (
-            <TouchableOpacity onPress={() => navigation.navigate('AddDonation')}>
+            // @ts-ignore
+            <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'Donations' })}>
               <Text style={styles.seeAllText}>{t('viewAll')} →</Text>
             </TouchableOpacity>
           )}

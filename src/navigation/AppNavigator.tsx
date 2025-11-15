@@ -48,6 +48,14 @@ const MainTabs = () => {
         }}
       />
       <Tab.Screen
+        name="Donations"
+        component={DonationsScreen}
+        options={{
+          tabBarLabel: 'Donations',
+          title: 'Donations',
+        }}
+      />
+      <Tab.Screen
         name="Donors"
         component={DonorsScreen}
         options={{
@@ -62,15 +70,7 @@ const MainTabs = () => {
           tabBarLabel: 'Projects',
           title: 'Projects',
         }}
-      />
-      <Tab.Screen
-        name="Donations"
-        component={DonationsScreen}
-        options={{
-          tabBarLabel: 'Donations',
-          title: 'Donations',
-        }}
-      />
+      /> 
     </Tab.Navigator>
   );
 };
