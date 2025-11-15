@@ -28,6 +28,30 @@ yarn-error.*
 
 # Local env files
 .env*.local
+.env
+.env.production
+.env.staging
+.env.development
 
 # TypeScript
 *.tsbuildinfo
+
+# Production
+*.aab
+*.apk
+*.ipa
+
+# Credentials & Secrets
+google-service-account.json
+apple-team-id.txt
+*.p12
+*.cer
+credentials.json
+
+# EAS
+.eas/
+
+# Build artifacts
+android/app/build/
+ios/build/
+*.log
