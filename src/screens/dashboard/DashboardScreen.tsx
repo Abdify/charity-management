@@ -22,6 +22,7 @@ import {
   t,
 } from '../../utils/helpers';
 import { dropboxService } from '../../services/dropbox';
+import { Ionicons } from '@expo/vector-icons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -177,36 +178,46 @@ const DashboardScreen = () => {
           onPress={() => navigation.navigate('AddDonor', {})}
           activeOpacity={0.8}
         >
-          <Text style={styles.quickActionIcon}>👥</Text>
-          <Text style={styles.quickActionText}>{t('donors')}</Text>
+          <Text style={styles.quickActionIcon}>
+            <Ionicons name="people" size={24} />
+          </Text>
+          <Text style={styles.quickActionText}>{t('addDonor')}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Statistics Grid */}
       <View style={styles.statsGrid}>
         <View style={[styles.statCard, styles.statCardBlue]}>
-          <Text style={styles.statIcon}>📊</Text>
+          <Text style={styles.statIcon}>
+            <Ionicons name="gift" size={32} />
+          </Text>
           <Text style={styles.statValue}>{stats.totalDonationCount}</Text>
           <Text style={styles.statLabel}>{t('donations')}</Text>
         </View>
         <View style={[styles.statCard, styles.statCardGreen]}>
-          <Text style={styles.statIcon}>👥</Text>
+          <Text style={styles.statIcon}>
+            <Ionicons name="people" size={32} />
+          </Text>
           <Text style={styles.statValue}>{stats.activeDonors}</Text>
           <Text style={styles.statLabel}>{t('activeDonors')}</Text>
-          <Text style={styles.statSubLabel}>{t('of')} {stats.totalDonors}</Text>
+          <Text style={styles.statSubLabel}> / {stats.totalDonors}</Text>
         </View>
         <View style={[styles.statCard, styles.statCardOrange]}>
-          <Text style={styles.statIcon}>🎯</Text>
+          <Text style={styles.statIcon}>
+            <Ionicons name="home" size={32} />
+          </Text>
           <Text style={styles.statValue}>{stats.activeProjects}</Text>
           <Text style={styles.statLabel}>{t('activeProjects')}</Text>
-          <Text style={styles.statSubLabel}>{t('of')} {stats.totalProjects}</Text>
+          <Text style={styles.statSubLabel}> / {stats.totalProjects}</Text>
         </View>
         <TouchableOpacity
           style={[styles.statCard, styles.statCardPurple]}
           onPress={() => navigation.navigate('AddProject', {})}
           activeOpacity={0.8}
         >
-          <Text style={styles.statIcon}>📋</Text>
+          <Text style={styles.statIcon}>
+            <Ionicons name="albums" size={32} />
+          </Text>
           <Text style={styles.statValue}>{stats.totalProjects}</Text>
           <Text style={styles.statLabel}>{t('projects')}</Text>
         </TouchableOpacity>
