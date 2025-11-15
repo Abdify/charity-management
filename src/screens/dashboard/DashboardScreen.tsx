@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../../contexts/AppContext';
 import { Card, Button } from '../../components';
@@ -19,7 +19,7 @@ import {
   getRecentDonations,
   getDonorStats,
 } from '../../utils/helpers';
-import { googleDriveService } from '../../services/googleDrive';
+import { megaService } from '../../services/mega';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -27,6 +27,7 @@ const DashboardScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { donors, projects, donations, isLoading, exportBackup, importBackup } = useApp();
   const [backupLoading, setBackupLoading] = useState(false);
+  const [isMegaConnected, setIsMegaConnected] = useState(false);
 
   const stats = useMemo(() => {
     const totalDonations = donations.reduce((sum, d) => sum + d.amount, 0);
@@ -47,23 +48,70 @@ const DashboardScreen = () => {
     return getRecentDonations(donations, 5);
   }, [donations]);
 
+  // Check MEGA connection status when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      checkMegaStatus();
+    }, [])
+  );
+
+  const checkMegaStatus = async () => {
+    const hasCredentials = await megaService.hasCredentials();
+    setIsMegaConnected(hasCredentials);
+  };
+
   const handleBackup = async () => {
+    // Check if MEGA is connected
+    if (!isMegaConnected) {
+      Alert.alert(
+        'MEGA Not Connected',
+        'Please connect your MEGA account to use cloud backup.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Connect MEGA',
+            onPress: () => navigation.navigate('MegaSettings'),
+          },
+        ]
+      );
+      return;
+    }
     setBackupLoading(true);
     try {
       const data = await exportBackup();
-      await googleDriveService.saveBackup(data);
-      Alert.alert('Success', 'Backup created successfully!');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to create backup. Please try again.');
+      await megaService.uploadBackup(data);
+      Alert.alert('Success', 'Backup uploaded to MEGA successfully!');
+    } catch (error: any) {
+      console.error('Backup error:', error);
+      Alert.alert(
+        'Backup Failed',
+        error.message || 'Failed to create backup. Please try again.'
+      );
     } finally {
       setBackupLoading(false);
     }
   };
 
   const handleRestore = async () => {
+    // Check if MEGA is connected
+    if (!isMegaConnected) {
+      Alert.alert(
+        'MEGA Not Connected',
+        'Please connect your MEGA account to restore from cloud backup.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Connect MEGA',
+            onPress: () => navigation.navigate('MegaSettings'),
+          },
+        ]
+      );
+      return;
+    }
+
     Alert.alert(
       'Restore Backup',
-      'This will replace all current data with the backup. Are you sure?',
+      'This will replace all current data with the backup from MEGA. Are you sure?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -72,15 +120,19 @@ const DashboardScreen = () => {
           onPress: async () => {
             setBackupLoading(true);
             try {
-              const data = await googleDriveService.loadBackup();
+              const data = await megaService.downloadBackup();
               if (data) {
                 await importBackup(data);
-                Alert.alert('Success', 'Data restored successfully!');
+                Alert.alert('Success', 'Data restored from MEGA successfully!');
               } else {
-                Alert.alert('Info', 'No backup found.');
+                Alert.alert('Info', 'No backup found on MEGA.');
               }
-            } catch (error) {
-              Alert.alert('Error', 'Failed to restore backup. Please try again.');
+            } catch (error: any) {
+              console.error('Restore error:', error);
+              Alert.alert(
+                'Restore Failed',
+                error.message || 'Failed to restore backup. Please try again.'
+              );
             } finally {
               setBackupLoading(false);
             }
@@ -187,26 +239,57 @@ const DashboardScreen = () => {
 
       {/* Backup & Restore */}
       <Card>
-        <Text style={styles.sectionTitle}>Backup & Restore</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>MEGA Cloud Backup</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('MegaSettings')}>
+            <Text style={styles.seeAllText}>Settings</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* MEGA Status */}
+        <View style={styles.megaStatusContainer}>
+          {isMegaConnected ? (
+            <View style={styles.megaConnected}>
+              <Text style={styles.megaStatusText}>✓ Connected to MEGA</Text>
+            </View>
+          ) : (
+            <View style={styles.megaDisconnected}>
+              <Text style={styles.megaStatusText}>⚠ Not connected</Text>
+            </View>
+          )}
+        </View>
+
         <Text style={styles.backupDescription}>
-          Save your data to local storage or restore from a previous backup.
+          {isMegaConnected
+            ? 'Backup your data to MEGA cloud storage and restore anytime.'
+            : 'Connect to MEGA to enable cloud backup and restore.'}
         </Text>
+
         <View style={styles.backupButtonsContainer}>
           <Button
-            title="Create Backup"
+            title="Backup to MEGA"
             onPress={handleBackup}
             loading={backupLoading}
             variant="primary"
             style={styles.backupButton}
           />
           <Button
-            title="Restore Backup"
+            title="Restore from MEGA"
             onPress={handleRestore}
             loading={backupLoading}
             variant="secondary"
             style={styles.backupButton}
           />
         </View>
+
+        {!isMegaConnected && (
+          <Button
+            title="Connect to MEGA"
+            onPress={() => navigation.navigate('MegaSettings')}
+            variant="success"
+            style={{ marginTop: 12 }}
+          />
+        )}
       </Card>
     </ScrollView>
   );
@@ -335,6 +418,30 @@ const styles = StyleSheet.create({
   },
   backupButton: {
     flex: 1,
+  },
+  megaStatusContainer: {
+    marginBottom: 12,
+  },
+  megaConnected: {
+    backgroundColor: '#E8F5E9',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  megaDisconnected: {
+    backgroundColor: '#FFF3E0',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FF9800',
+  },
+  megaStatusText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
   },
 });
 

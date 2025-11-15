@@ -14,6 +14,7 @@ import AddProjectScreen from '../screens/projects/AddProjectScreen';
 import ProjectProfileScreen from '../screens/projects/ProjectProfileScreen';
 import DonationsScreen from '../screens/donations/DonationsScreen';
 import AddDonationScreen from '../screens/donations/AddDonationScreen';
+import MegaSettingsScreen from '../screens/settings/MegaSettingsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -127,6 +128,11 @@ export const AppNavigator = () => {
           name="AddDonation"
           component={AddDonationScreen}
           options={{ title: 'New Donation' }}
+        />
+        <Stack.Screen
+          name="MegaSettings"
+          component={MegaSettingsScreen}
+          options={{ title: 'MEGA Cloud Settings' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

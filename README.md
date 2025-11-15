@@ -6,8 +6,8 @@ A comprehensive charity donation management application built with React Native 
 
 ### Core Functionality
 - **Fully Offline**: All data is stored locally using AsyncStorage
-- **Backup System**: Save and restore data to local storage (Google Drive integration ready)
-- **No Authentication**: Simple, single-user experience
+- **MEGA Cloud Backup**: Secure cloud backup and restore using MEGA cloud storage
+- **No Authentication**: Simple, single-user experience (only MEGA login for backup)
 - **Beautiful UI**: Mobile-first design following Material Design principles
 
 ### Donor Management
@@ -37,7 +37,7 @@ A comprehensive charity donation management application built with React Native 
 - Quick access to add donations
 - Recent donations list
 - Active donors and projects count
-- Backup and restore functionality
+- MEGA cloud backup and restore functionality
 
 ## Technology Stack
 
@@ -46,7 +46,7 @@ A comprehensive charity donation management application built with React Native 
 - **TypeScript**: Type-safe code
 - **React Navigation**: Navigation and routing
 - **AsyncStorage**: Offline data persistence
-- **Expo File System**: Backup functionality
+- **MEGA JS SDK**: Cloud backup and restore
 
 ## Project Structure
 
@@ -67,10 +67,11 @@ charity-management/
 │   │   ├── dashboard/
 │   │   ├── donors/
 │   │   ├── projects/
-│   │   └── donations/
+│   │   ├── donations/
+│   │   └── settings/
 │   ├── services/          # External services
 │   │   ├── storage.ts     # AsyncStorage wrapper
-│   │   └── googleDrive.ts # Backup service
+│   │   └── mega.ts        # MEGA cloud backup service
 │   ├── types/             # TypeScript types
 │   │   └── index.ts
 │   └── utils/             # Helper functions
@@ -149,20 +150,32 @@ The app will automatically:
 - Update donor's donation history
 - Reflect changes in all statistics
 
-### Backup and Restore
+### MEGA Cloud Backup and Restore
+
+#### Setting Up MEGA
+1. Create a free MEGA account at mega.nz (if you don't have one)
+2. From the Dashboard, tap "Settings" in the MEGA Cloud Backup section
+3. Enter your MEGA email and password
+4. Tap "Connect to MEGA"
+5. Your credentials will be saved securely for future backups
 
 #### Creating a Backup
 1. Go to the Dashboard
-2. Scroll to "Backup & Restore" section
-3. Tap "Create Backup"
-4. Backup will be saved to local storage
+2. Scroll to "MEGA Cloud Backup" section
+3. Ensure you're connected to MEGA (green status badge)
+4. Tap "Backup to MEGA"
+5. Your data will be uploaded to MEGA cloud storage
+6. Previous backups are automatically replaced
 
 #### Restoring from Backup
 1. Go to the Dashboard
-2. Scroll to "Backup & Restore" section
-3. Tap "Restore Backup"
-4. Confirm the action
-5. Data will be restored from the most recent backup
+2. Scroll to "MEGA Cloud Backup" section
+3. Ensure you're connected to MEGA
+4. Tap "Restore from MEGA"
+5. Confirm the action
+6. Data will be downloaded and restored from MEGA
+
+**Note**: Only one backup file is kept on MEGA at a time. Each new backup replaces the previous one.
 
 ## Data Models
 
@@ -203,13 +216,14 @@ The app is built with extensibility in mind:
 
 ## Future Enhancements
 
-- [ ] Google Drive cloud backup integration
+- [x] MEGA cloud backup integration (Completed!)
 - [ ] Export data to CSV/Excel
 - [ ] Donation receipts generation
 - [ ] Email/SMS notifications
 - [ ] Charts and analytics
 - [ ] Multi-currency support
 - [ ] Recurring donation tracking
+- [ ] Multiple cloud storage options (Google Drive, Dropbox)
 
 ## Contributing
 

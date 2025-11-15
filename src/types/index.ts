@@ -81,6 +81,7 @@ export type RootStackParamList = {
   EditProject: { projectId: string };
   ProjectProfile: { projectId: string };
   AddDonation: undefined;
+  MegaSettings: undefined;
 };
 
 export type MainTabParamList = {
