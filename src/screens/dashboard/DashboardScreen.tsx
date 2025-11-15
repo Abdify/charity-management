@@ -19,7 +19,7 @@ import {
   getRecentDonations,
   getDonorStats,
 } from '../../utils/helpers';
-import { megaService } from '../../services/mega';
+import { dropboxService } from '../../services/dropbox';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -27,7 +27,7 @@ const DashboardScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { donors, projects, donations, isLoading, exportBackup, importBackup } = useApp();
   const [backupLoading, setBackupLoading] = useState(false);
-  const [isMegaConnected, setIsMegaConnected] = useState(false);
+  const [isDropboxConnected, setIsDropboxConnected] = useState(false);
 
   const stats = useMemo(() => {
     const totalDonations = donations.reduce((sum, d) => sum + d.amount, 0);
@@ -48,29 +48,29 @@ const DashboardScreen = () => {
     return getRecentDonations(donations, 5);
   }, [donations]);
 
-  // Check MEGA connection status when screen comes into focus
+  // Check Dropbox connection status when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
-      checkMegaStatus();
+      checkDropboxStatus();
     }, [])
   );
 
-  const checkMegaStatus = async () => {
-    const hasCredentials = await megaService.hasCredentials();
-    setIsMegaConnected(hasCredentials);
+  const checkDropboxStatus = async () => {
+    const hasToken = await dropboxService.hasAccessToken();
+    setIsDropboxConnected(hasToken);
   };
 
   const handleBackup = async () => {
-    // Check if MEGA is connected
-    if (!isMegaConnected) {
+    // Check if Dropbox is connected
+    if (!isDropboxConnected) {
       Alert.alert(
-        'MEGA Not Connected',
-        'Please connect your MEGA account to use cloud backup.',
+        'Dropbox Not Connected',
+        'Please connect your Dropbox account to use cloud backup.',
         [
           { text: 'Cancel', style: 'cancel' },
           {
-            text: 'Connect MEGA',
-            onPress: () => navigation.navigate('MegaSettings'),
+            text: 'Connect Dropbox',
+            onPress: () => navigation.navigate('DropboxSettings'),
           },
         ]
       );
@@ -79,8 +79,8 @@ const DashboardScreen = () => {
     setBackupLoading(true);
     try {
       const data = await exportBackup();
-      await megaService.uploadBackup(data);
-      Alert.alert('Success', 'Backup uploaded to MEGA successfully!');
+      await dropboxService.uploadBackup(data);
+      Alert.alert('Success', 'Backup uploaded to Dropbox successfully!');
     } catch (error: any) {
       console.error('Backup error:', error);
       Alert.alert(
@@ -93,16 +93,16 @@ const DashboardScreen = () => {
   };
 
   const handleRestore = async () => {
-    // Check if MEGA is connected
-    if (!isMegaConnected) {
+    // Check if Dropbox is connected
+    if (!isDropboxConnected) {
       Alert.alert(
-        'MEGA Not Connected',
-        'Please connect your MEGA account to restore from cloud backup.',
+        'Dropbox Not Connected',
+        'Please connect your Dropbox account to restore from cloud backup.',
         [
           { text: 'Cancel', style: 'cancel' },
           {
-            text: 'Connect MEGA',
-            onPress: () => navigation.navigate('MegaSettings'),
+            text: 'Connect Dropbox',
+            onPress: () => navigation.navigate('DropboxSettings'),
           },
         ]
       );
@@ -111,7 +111,7 @@ const DashboardScreen = () => {
 
     Alert.alert(
       'Restore Backup',
-      'This will replace all current data with the backup from MEGA. Are you sure?',
+      'This will replace all current data with the backup from Dropbox. Are you sure?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -120,12 +120,12 @@ const DashboardScreen = () => {
           onPress: async () => {
             setBackupLoading(true);
             try {
-              const data = await megaService.downloadBackup();
+              const data = await dropboxService.downloadBackup();
               if (data) {
                 await importBackup(data);
-                Alert.alert('Success', 'Data restored from MEGA successfully!');
+                Alert.alert('Success', 'Data restored from Dropbox successfully!');
               } else {
-                Alert.alert('Info', 'No backup found on MEGA.');
+                Alert.alert('Info', 'No backup found on Dropbox.');
               }
             } catch (error: any) {
               console.error('Restore error:', error);
@@ -240,41 +240,41 @@ const DashboardScreen = () => {
       {/* Backup & Restore */}
       <Card>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>MEGA Cloud Backup</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('MegaSettings')}>
+          <Text style={styles.sectionTitle}>Dropbox Cloud Backup</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('DropboxSettings')}>
             <Text style={styles.seeAllText}>Settings</Text>
           </TouchableOpacity>
         </View>
 
-        {/* MEGA Status */}
-        <View style={styles.megaStatusContainer}>
-          {isMegaConnected ? (
-            <View style={styles.megaConnected}>
-              <Text style={styles.megaStatusText}>✓ Connected to MEGA</Text>
+        {/* Dropbox Status */}
+        <View style={styles.dropboxStatusContainer}>
+          {isDropboxConnected ? (
+            <View style={styles.dropboxConnected}>
+              <Text style={styles.dropboxStatusText}>✓ Connected to Dropbox</Text>
             </View>
           ) : (
-            <View style={styles.megaDisconnected}>
-              <Text style={styles.megaStatusText}>⚠ Not connected</Text>
+            <View style={styles.dropboxDisconnected}>
+              <Text style={styles.dropboxStatusText}>⚠ Not connected</Text>
             </View>
           )}
         </View>
 
         <Text style={styles.backupDescription}>
-          {isMegaConnected
-            ? 'Backup your data to MEGA cloud storage and restore anytime.'
-            : 'Connect to MEGA to enable cloud backup and restore.'}
+          {isDropboxConnected
+            ? 'Backup your data to Dropbox cloud storage and restore anytime.'
+            : 'Connect to Dropbox to enable cloud backup and restore.'}
         </Text>
 
         <View style={styles.backupButtonsContainer}>
           <Button
-            title="Backup to MEGA"
+            title="Backup to Dropbox"
             onPress={handleBackup}
             loading={backupLoading}
             variant="primary"
             style={styles.backupButton}
           />
           <Button
-            title="Restore from MEGA"
+            title="Restore from Dropbox"
             onPress={handleRestore}
             loading={backupLoading}
             variant="secondary"
@@ -282,10 +282,10 @@ const DashboardScreen = () => {
           />
         </View>
 
-        {!isMegaConnected && (
+        {!isDropboxConnected && (
           <Button
-            title="Connect to MEGA"
-            onPress={() => navigation.navigate('MegaSettings')}
+            title="Connect to Dropbox"
+            onPress={() => navigation.navigate('DropboxSettings')}
             variant="success"
             style={{ marginTop: 12 }}
           />
@@ -419,10 +419,10 @@ const styles = StyleSheet.create({
   backupButton: {
     flex: 1,
   },
-  megaStatusContainer: {
+  dropboxStatusContainer: {
     marginBottom: 12,
   },
-  megaConnected: {
+  dropboxConnected: {
     backgroundColor: '#E8F5E9',
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#4CAF50',
   },
-  megaDisconnected: {
+  dropboxDisconnected: {
     backgroundColor: '#FFF3E0',
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FF9800',
   },
-  megaStatusText: {
+  dropboxStatusText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#333',

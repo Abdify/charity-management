@@ -6,8 +6,8 @@ A comprehensive charity donation management application built with React Native 
 
 ### Core Functionality
 - **Fully Offline**: All data is stored locally using AsyncStorage
-- **MEGA Cloud Backup**: Secure cloud backup and restore using MEGA cloud storage
-- **No Authentication**: Simple, single-user experience (only MEGA login for backup)
+- **Dropbox Cloud Backup**: Secure cloud backup and restore using Dropbox
+- **No Authentication**: Simple, single-user experience (only Dropbox token for backup)
 - **Beautiful UI**: Mobile-first design following Material Design principles
 
 ### Donor Management
@@ -37,7 +37,7 @@ A comprehensive charity donation management application built with React Native 
 - Quick access to add donations
 - Recent donations list
 - Active donors and projects count
-- MEGA cloud backup and restore functionality
+- Dropbox cloud backup and restore functionality
 
 ## Technology Stack
 
@@ -46,7 +46,7 @@ A comprehensive charity donation management application built with React Native 
 - **TypeScript**: Type-safe code
 - **React Navigation**: Navigation and routing
 - **AsyncStorage**: Offline data persistence
-- **MEGA JS SDK**: Cloud backup and restore
+- **Dropbox REST API**: Cloud backup and restore
 
 ## Project Structure
 
@@ -71,7 +71,7 @@ charity-management/
 │   │   └── settings/
 │   ├── services/          # External services
 │   │   ├── storage.ts     # AsyncStorage wrapper
-│   │   └── mega.ts        # MEGA cloud backup service
+│   │   └── dropbox.ts        # Dropbox cloud backup service
 │   ├── types/             # TypeScript types
 │   │   └── index.ts
 │   └── utils/             # Helper functions
@@ -150,32 +150,63 @@ The app will automatically:
 - Update donor's donation history
 - Reflect changes in all statistics
 
-### MEGA Cloud Backup and Restore
 
-#### Setting Up MEGA
-1. Create a free MEGA account at mega.nz (if you don't have one)
-2. From the Dashboard, tap "Settings" in the MEGA Cloud Backup section
-3. Enter your MEGA email and password
-4. Tap "Connect to MEGA"
-5. Your credentials will be saved securely for future backups
+### Dropbox Cloud Backup and Restore
+
+#### Setting Up Dropbox
+1. Go to [Dropbox App Console](https://www.dropbox.com/developers/apps)
+2. Create a new app:
+   - Choose "Scoped access"
+   - Choose "Full Dropbox" access
+   - Give your app a name (e.g., "Charity Manager")
+3. Generate an access token in the app settings
+4. From the Dashboard, tap "Settings" in the Dropbox Cloud Backup section
+5. Paste your access token
+6. Tap "Connect to Dropbox"
+7. Your token will be saved securely for future backups
 
 #### Creating a Backup
 1. Go to the Dashboard
-2. Scroll to "MEGA Cloud Backup" section
-3. Ensure you're connected to MEGA (green status badge)
-4. Tap "Backup to MEGA"
-5. Your data will be uploaded to MEGA cloud storage
+2. Scroll to "Dropbox Cloud Backup" section
+3. Ensure you're connected to Dropbox (green status badge)
+4. Tap "Backup to Dropbox"
+5. Your data will be uploaded to Dropbox
 6. Previous backups are automatically replaced
 
 #### Restoring from Backup
 1. Go to the Dashboard
-2. Scroll to "MEGA Cloud Backup" section
-3. Ensure you're connected to MEGA
-4. Tap "Restore from MEGA"
+2. Scroll to "Dropbox Cloud Backup" section
+3. Ensure you're connected to Dropbox
+4. Tap "Restore from Dropbox"
 5. Confirm the action
-6. Data will be downloaded and restored from MEGA
+6. Data will be downloaded and restored from Dropbox
 
-**Note**: Only one backup file is kept on MEGA at a time. Each new backup replaces the previous one.
+**Note**: Only one backup file is kept on Dropbox at a time. Each new backup replaces the previous one.
+
+#### Setting Up Dropbox
+1. Go to [Dropbox App Console](https://www.dropbox.com/developers/apps)
+2. From the Dashboard, tap "Settings" in the Dropbox Cloud Backup section
+3. Create a new app (choose "Scoped access" and "Full Dropbox"), generate an access token, and paste it below
+4. Tap "Connect to Dropbox"
+5. Your credentials will be saved securely for future backups
+
+#### Creating a Backup
+1. Go to the Dashboard
+2. Scroll to "Dropbox Cloud Backup" section
+3. Ensure you're connected to Dropbox (green status badge)
+4. Tap "Backup to Dropbox"
+5. Your data will be uploaded to Dropbox
+6. Previous backups are automatically replaced
+
+#### Restoring from Backup
+1. Go to the Dashboard
+2. Scroll to "Dropbox Cloud Backup" section
+3. Ensure you're connected to Dropbox
+4. Tap "Restore from Dropbox"
+5. Confirm the action
+6. Data will be downloaded and restored from Dropbox
+
+**Note**: Only one backup file is kept on Dropbox at a time. Each new backup replaces the previous one.
 
 ## Data Models
 
@@ -216,14 +247,14 @@ The app is built with extensibility in mind:
 
 ## Future Enhancements
 
-- [x] MEGA cloud backup integration (Completed!)
+- [x] Dropbox cloud backup integration (Completed!)
 - [ ] Export data to CSV/Excel
 - [ ] Donation receipts generation
 - [ ] Email/SMS notifications
 - [ ] Charts and analytics
 - [ ] Multi-currency support
 - [ ] Recurring donation tracking
-- [ ] Multiple cloud storage options (Google Drive, Dropbox)
+- [ ] Multiple cloud storage options (Google Drive, OneDrive)
 
 ## Contributing
 
