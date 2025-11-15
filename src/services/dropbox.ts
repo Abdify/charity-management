@@ -1,19 +1,26 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Dropbox } from 'dropbox';
 
 const DROPBOX_ACCESS_TOKEN_KEY = '@charity_app_dropbox_token';
 const BACKUP_FILENAME = '/charity_backup.json';
-const DROPBOX_API_URL = 'https://api.dropboxapi.com/2';
-const DROPBOX_CONTENT_URL = 'https://content.dropboxapi.com/2';
-
-interface DropboxError {
-  error_summary: string;
-  error: {
-    '.tag': string;
-  };
-}
 
 class DropboxService {
   private accessToken: string | null = null;
+  private dbx: Dropbox | null = null;
+
+  // Initialize Dropbox client
+  private initializeClient(token?: string): Dropbox {
+    const accessToken = token || this.accessToken;
+    if (!accessToken) {
+      throw new Error('No access token available');
+    }
+
+    // Create Dropbox instance with fetch (available globally in React Native)
+    return new Dropbox({
+      accessToken,
+      fetch: fetch.bind(globalThis) // Bind global fetch for React Native
+    });
+  }
 
   // Load stored access token
   async loadAccessToken(): Promise<string | null> {
@@ -21,6 +28,7 @@ class DropboxService {
       const token = await AsyncStorage.getItem(DROPBOX_ACCESS_TOKEN_KEY);
       if (token) {
         this.accessToken = token;
+        this.dbx = this.initializeClient(token);
         return token;
       }
       return null;
@@ -35,6 +43,7 @@ class DropboxService {
     try {
       await AsyncStorage.setItem(DROPBOX_ACCESS_TOKEN_KEY, token);
       this.accessToken = token;
+      this.dbx = this.initializeClient(token);
     } catch (error) {
       console.error('Error saving Dropbox access token:', error);
       throw error;
@@ -46,6 +55,7 @@ class DropboxService {
     try {
       await AsyncStorage.removeItem(DROPBOX_ACCESS_TOKEN_KEY);
       this.accessToken = null;
+      this.dbx = null;
     } catch (error) {
       console.error('Error clearing Dropbox access token:', error);
       throw error;
@@ -66,22 +76,16 @@ class DropboxService {
         throw new Error('No access token provided');
       }
 
-      const response = await fetch(`${DROPBOX_API_URL}/users/get_current_account`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${testToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const dbx = this.initializeClient(testToken);
+      const response = await dbx.usersGetCurrentAccount();
 
-      if (response.ok) {
-        return true;
-      } else {
-        const error: DropboxError = await response.json();
-        throw new Error(error.error_summary || 'Connection failed');
-      }
-    } catch (error) {
+      return response.status === 200;
+    } catch (error: any) {
       console.error('Dropbox connection test failed:', error);
+      // Check if it's an authentication error
+      if (error.status === 401 || error.error?.error_summary?.includes('invalid_access_token')) {
+        return false;
+      }
       return false;
     }
   }
@@ -89,103 +93,104 @@ class DropboxService {
   // Upload backup to Dropbox
   async uploadBackup(data: string): Promise<void> {
     try {
-      if (!this.accessToken) {
+      if (!this.dbx) {
         await this.loadAccessToken();
+        if (!this.dbx) {
+          throw new Error('Not logged in to Dropbox');
+        }
       }
 
-      if (!this.accessToken) {
-        throw new Error('Not logged in to Dropbox');
-      }
+      // Convert string to Blob for upload
+      const blob = new Blob([data], { type: 'application/json' });
 
-      const response = await fetch(`${DROPBOX_CONTENT_URL}/files/upload`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/octet-stream',
-          'Dropbox-API-Arg': JSON.stringify({
-            path: BACKUP_FILENAME,
-            mode: 'overwrite',
-            autorename: false,
-            mute: false,
-          }),
-        },
-        body: data,
+      const response = await this.dbx.filesUpload({
+        path: BACKUP_FILENAME,
+        contents: blob,
+        mode: { '.tag': 'overwrite' },
+        autorename: false,
+        mute: false,
       });
 
-      if (!response.ok) {
-        const error: DropboxError = await response.json();
-        throw new Error(error.error_summary || 'Upload failed');
-      }
-
-      console.log('Backup uploaded successfully to Dropbox');
+      console.log('Backup uploaded successfully to Dropbox:', response.result.name);
     } catch (error: any) {
       console.error('Upload backup error:', error);
-      throw new Error(error.message || 'Failed to upload backup to Dropbox');
+      const errorMessage = error.error?.error_summary || error.message || 'Failed to upload backup to Dropbox';
+      throw new Error(errorMessage);
     }
   }
 
   // Download backup from Dropbox
   async downloadBackup(): Promise<string> {
     try {
-      if (!this.accessToken) {
+      if (!this.dbx) {
         await this.loadAccessToken();
+        if (!this.dbx) {
+          throw new Error('Not logged in to Dropbox');
+        }
       }
 
-      if (!this.accessToken) {
-        throw new Error('Not logged in to Dropbox');
-      }
-
-      const response = await fetch(`${DROPBOX_CONTENT_URL}/files/download`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Dropbox-API-Arg': JSON.stringify({
-            path: BACKUP_FILENAME,
-          }),
-        },
+      const response = await this.dbx.filesDownload({
+        path: BACKUP_FILENAME,
       });
 
-      if (!response.ok) {
-        const error: DropboxError = await response.json();
-        if (error.error?.['.tag'] === 'path' || error.error_summary?.includes('not_found')) {
-          throw new Error('No backup file found on Dropbox');
-        }
-        throw new Error(error.error_summary || 'Download failed');
+      // The SDK returns the file as fileBlob in the result
+      const fileBlob = (response.result as any).fileBlob;
+
+      if (!fileBlob) {
+        throw new Error('No file data received from Dropbox');
       }
 
-      const data = await response.text();
+      // Convert Blob to text
+      const data = await this.blobToText(fileBlob);
       console.log('Backup downloaded successfully from Dropbox');
       return data;
     } catch (error: any) {
       console.error('Download backup error:', error);
-      throw new Error(error.message || 'Failed to download backup from Dropbox');
+
+      // Check if file not found
+      if (error.status === 409 || error.error?.error_summary?.includes('not_found')) {
+        throw new Error('No backup file found on Dropbox');
+      }
+
+      const errorMessage = error.error?.error_summary || error.message || 'Failed to download backup from Dropbox';
+      throw new Error(errorMessage);
     }
+  }
+
+  // Helper: Convert Blob to text
+  private async blobToText(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve(reader.result as string);
+      };
+      reader.onerror = () => {
+        reject(new Error('Failed to read blob'));
+      };
+      reader.readAsText(blob);
+    });
   }
 
   // Check if backup exists
   async hasBackup(): Promise<boolean> {
     try {
-      if (!this.accessToken) {
+      if (!this.dbx) {
         await this.loadAccessToken();
+        if (!this.dbx) {
+          return false;
+        }
       }
 
-      if (!this.accessToken) {
-        return false;
-      }
-
-      const response = await fetch(`${DROPBOX_API_URL}/files/get_metadata`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          path: BACKUP_FILENAME,
-        }),
+      await this.dbx.filesGetMetadata({
+        path: BACKUP_FILENAME,
       });
 
-      return response.ok;
-    } catch (error) {
+      return true;
+    } catch (error: any) {
+      // File not found is expected if no backup exists
+      if (error.status === 409 || error.error?.error_summary?.includes('not_found')) {
+        return false;
+      }
       console.error('Error checking backup:', error);
       return false;
     }
@@ -194,24 +199,17 @@ class DropboxService {
   // Get account info
   async getAccountInfo(): Promise<{ name: string; email: string } | null> {
     try {
-      if (!this.accessToken) {
+      if (!this.dbx) {
         await this.loadAccessToken();
+        if (!this.dbx) {
+          return null;
+        }
       }
 
-      if (!this.accessToken) {
-        return null;
-      }
+      const response = await this.dbx.usersGetCurrentAccount();
 
-      const response = await fetch(`${DROPBOX_API_URL}/users/get_current_account`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status === 200) {
+        const data = response.result;
         return {
           name: data.name?.display_name || 'Unknown',
           email: data.email || 'Unknown',
