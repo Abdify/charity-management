@@ -2,7 +2,9 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList, MainTabParamList } from '../types';
+import { t } from '../utils/helpers';
 
 // Import screens
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
@@ -43,32 +45,44 @@ const MainTabs = () => {
         name="Dashboard"
         component={DashboardScreen}
         options={{
-          tabBarLabel: 'Dashboard',
-          title: 'Charity Manager',
+          tabBarLabel: t('dashboard'),
+          title: t('charityManager'),
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="stats-chart" size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen
         name="Donations"
         component={DonationsScreen}
         options={{
-          tabBarLabel: 'Donations',
-          title: 'Donations',
+          tabBarLabel: t('donations'),
+          title: t('donations'),
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="gift" size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen
         name="Donors"
         component={DonorsScreen}
         options={{
-          tabBarLabel: 'Donors',
-          title: 'Donors',
+          tabBarLabel: t('donors'),
+          title: t('donors'),
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people" size={size} color={color} />
+          ),
         }}
       />
       <Tab.Screen
         name="Projects"
         component={ProjectsScreen}
         options={{
-          tabBarLabel: 'Projects',
-          title: 'Projects',
+          tabBarLabel: t('projects'),
+          title: t('projects'),
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="albums" size={size} color={color} />
+          ),
         }}
       /> 
     </Tab.Navigator>
@@ -97,42 +111,42 @@ export const AppNavigator = () => {
         <Stack.Screen
           name="AddDonor"
           component={AddDonorScreen}
-          options={{ title: 'Add Donor' }}
+          options={{ title: t('addDonor') }}
         />
         <Stack.Screen
           name="EditDonor"
           component={AddDonorScreen}
-          options={{ title: 'Edit Donor' }}
+          options={{ title: t('editDonor') }}
         />
         <Stack.Screen
           name="DonorProfile"
           component={DonorProfileScreen}
-          options={{ title: 'Donor Profile' }}
+          options={{ title: t('donorProfile') }}
         />
         <Stack.Screen
           name="AddProject"
           component={AddProjectScreen}
-          options={{ title: 'Add Project' }}
+          options={{ title: t('addProject') }}
         />
         <Stack.Screen
           name="EditProject"
           component={AddProjectScreen}
-          options={{ title: 'Edit Project' }}
+          options={{ title: t('editProject') }}
         />
         <Stack.Screen
           name="ProjectProfile"
           component={ProjectProfileScreen}
-          options={{ title: 'Project Details' }}
+          options={{ title: t('projectDetails') }}
         />
         <Stack.Screen
           name="AddDonation"
           component={AddDonationScreen}
-          options={{ title: 'New Donation' }}
+          options={{ title: t('newDonation') }}
         />
         <Stack.Screen
           name="DropboxSettings"
           component={DropboxSettingsScreen}
-          options={{ title: 'Dropbox Settings' }}
+          options={{ title: t('dropboxSettings') }}
         />
       </Stack.Navigator>
     </NavigationContainer>

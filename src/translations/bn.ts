@@ -24,6 +24,7 @@ export const bn = {
 
   // Dashboard
   dashboard: 'ড্যাশবোর্ড',
+  charityManager: 'দাতব্য ব্যবস্থাপনা',
   totalDonations: 'মোট দান',
   filteredDonations: 'ফিল্টারকৃত দান',
   activeDonors: 'সক্রিয় দাতা',
@@ -61,6 +62,7 @@ export const bn = {
   updateProject: 'প্রকল্প আপডেট করুন',
   deleteProject: 'প্রকল্প মুছুন',
   projectProfile: 'প্রকল্পের প্রোফাইল',
+  projectDetails: 'প্রকল্পের বিস্তারিত',
   projectName: 'প্রকল্পের নাম',
   description: 'বর্ণনা',
   targetAmount: 'লক্ষ্যমাত্রা',
@@ -80,6 +82,7 @@ export const bn = {
   donations: 'দানসমূহ',
   donation: 'দান',
   addDonation: 'দান যোগ করুন',
+  newDonation: 'নতুন দান',
   saveDonation: 'দান সংরক্ষণ করুন',
   amount: 'পরিমাণ',
   enterAmount: 'পরিমাণ লিখুন',
@@ -106,6 +109,7 @@ export const bn = {
   // Cloud Backup
   cloudBackup: 'ক্লাউড ব্যাকআপ',
   dropboxBackup: 'ড্রপবক্স ব্যাকআপ',
+  dropboxSettings: 'ড্রপবক্স সেটিংস',
   connected: 'সংযুক্ত',
   notConnected: 'সংযুক্ত নয়',
   backupToDropbox: 'ড্রপবক্সে ব্যাকআপ',
