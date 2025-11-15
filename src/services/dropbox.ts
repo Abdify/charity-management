@@ -73,12 +73,13 @@ class DropboxService {
         throw new Error('No access token provided');
       }
 
-      const response = await fetch(`${DROPBOX_API_URL}/users/get_current_account`, {
+      const response = await fetch(`${DROPBOX_API_URL}/check/user`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${testToken}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ success: true })
       });
 
       return response.ok;
