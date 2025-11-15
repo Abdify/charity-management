@@ -8,13 +8,14 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../../contexts/AppContext';
 import { Card, Button, EmptyState } from '../../components';
 import { RootStackParamList } from '../../types';
-import { formatCurrency, formatDate } from '../../utils/helpers';
+import { formatCurrency, formatDate, t } from '../../utils/helpers';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -109,13 +110,13 @@ const DonationsScreen = () => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Filter by Project</Text>
+            <Text style={styles.modalTitle}>{t('filterByProject')}</Text>
             <TouchableOpacity onPress={() => setShowProjectModal(false)}>
               <Text style={styles.closeButton}>✕</Text>
             </TouchableOpacity>
           </View>
           <FlatList
-            data={[{ id: '', name: 'All Projects' }, ...projects]}
+            data={[{ id: '', name: t('allProjects') }, ...projects]}
             keyExtractor={(item) => item.id || 'all'}
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -153,13 +154,13 @@ const DonationsScreen = () => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Filter by Month</Text>
+            <Text style={styles.modalTitle}>{t('filterByMonth')}</Text>
             <TouchableOpacity onPress={() => setShowMonthModal(false)}>
               <Text style={styles.closeButton}>✕</Text>
             </TouchableOpacity>
           </View>
           <FlatList
-            data={[{ value: '', label: 'All Months' }, ...availableMonths]}
+            data={[{ value: '', label: t('allMonths') }, ...availableMonths]}
             keyExtractor={(item) => item.value || 'all'}
             renderItem={({ item }) => (
               <TouchableOpacity
@@ -182,7 +183,7 @@ const DonationsScreen = () => {
               </TouchableOpacity>
             )}
             ListEmptyComponent={
-              <Text style={styles.emptyText}>No monthly donations found</Text>
+              <Text style={styles.emptyText}>{t('noDonations')}</Text>
             }
           />
         </View>
@@ -201,9 +202,9 @@ const DonationsScreen = () => {
   if (donations.length === 0) {
     return (
       <EmptyState
-        title="No Donations Yet"
-        message="Start tracking donations by adding your first one."
-        actionTitle="Add Donation"
+        title={t('noDonations')}
+        message={t('noDonationsMessage')}
+        actionTitle={t('addDonation')}
         onAction={() => navigation.navigate('AddDonation')}
       />
     );
@@ -211,34 +212,40 @@ const DonationsScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Summary Card */}
-      <Card style={styles.summaryCard}>
-        <Text style={styles.summaryLabel}>
-          {hasActiveFilters ? 'Filtered' : 'Total'} Donations
-        </Text>
-        <Text style={styles.summaryValue}>{formatCurrency(totalAmount)}</Text>
-        <Text style={styles.summaryCount}>
-          {filteredDonations.length} {hasActiveFilters && `of ${donations.length}`} donations
-        </Text>
-      </Card>
+      {/* Summary Card with Gradient */}
+      <View style={styles.summaryCardGradient}>
+        <Card style={styles.summaryCard}>
+          <Text style={styles.summaryIcon}>💰</Text>
+          <Text style={styles.summaryLabel}>
+            {hasActiveFilters ? t('filteredDonations') : t('totalDonations')}
+          </Text>
+          <Text style={styles.summaryValue}>{formatCurrency(totalAmount)}</Text>
+          <Text style={styles.summaryCount}>
+            {filteredDonations.length} {hasActiveFilters && `${t('of')} ${donations.length}`} {t('donations').toLowerCase()}
+          </Text>
+        </Card>
+      </View>
 
       {/* Filter Toggle Button */}
       <View style={styles.filterToggleContainer}>
         <TouchableOpacity
           style={[styles.filterToggleButton, hasActiveFilters && styles.filterToggleButtonActive]}
           onPress={() => setShowFilters(!showFilters)}
+          activeOpacity={0.7}
         >
+          <Text style={styles.filterIcon}>🔍</Text>
           <Text style={[styles.filterToggleText, hasActiveFilters && styles.filterToggleTextActive]}>
-            {showFilters ? '▼' : '▶'} Filters {hasActiveFilters && `(${[searchQuery ? 1 : 0, selectedProjectId ? 1 : 0, selectedMonth ? 1 : 0].reduce((a, b) => a + b, 0)})`}
+            {t('filters')} {hasActiveFilters && `(${[searchQuery ? 1 : 0, selectedProjectId ? 1 : 0, selectedMonth ? 1 : 0].reduce((a, b) => a + b, 0)})`}
           </Text>
+          <Text style={styles.filterArrow}>{showFilters ? '▼' : '▶'}</Text>
         </TouchableOpacity>
-        <Button
-          title="+ Add"
+        <TouchableOpacity
+          style={styles.addButton}
           onPress={() => navigation.navigate('AddDonation')}
-          variant="success"
-          size="small"
-          style={styles.addButtonSmall}
-        />
+          activeOpacity={0.8}
+        >
+          <Text style={styles.addButtonIcon}>+</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Filters Section */}
@@ -246,10 +253,10 @@ const DonationsScreen = () => {
         <View style={styles.filtersContainer}>
           {/* Search by donor name */}
           <View style={styles.filterItem}>
-            <Text style={styles.filterLabel}>Search Donor</Text>
+            <Text style={styles.filterLabel}>{t('searchDonor')}</Text>
             <TextInput
               style={styles.searchInput}
-              placeholder="Search by donor name..."
+              placeholder={t('searchByDonorName')}
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholderTextColor="#999"
@@ -258,15 +265,15 @@ const DonationsScreen = () => {
 
           {/* Project filter */}
           <View style={styles.filterItem}>
-            <Text style={styles.filterLabel}>Project</Text>
+            <Text style={styles.filterLabel}>{t('project')}</Text>
             <TouchableOpacity
               style={styles.filterButton}
               onPress={() => setShowProjectModal(true)}
             >
               <Text style={styles.filterButtonText}>
                 {selectedProjectId
-                  ? projects.find(p => p.id === selectedProjectId)?.name || 'Select Project'
-                  : 'All Projects'}
+                  ? projects.find(p => p.id === selectedProjectId)?.name || t('selectProject')
+                  : t('allProjects')}
               </Text>
               <Text style={styles.filterButtonIcon}>▼</Text>
             </TouchableOpacity>
@@ -275,15 +282,15 @@ const DonationsScreen = () => {
           {/* Month filter */}
           {availableMonths.length > 0 && (
             <View style={styles.filterItem}>
-              <Text style={styles.filterLabel}>Month</Text>
+              <Text style={styles.filterLabel}>{t('month')}</Text>
               <TouchableOpacity
                 style={styles.filterButton}
                 onPress={() => setShowMonthModal(true)}
               >
                 <Text style={styles.filterButtonText}>
                   {selectedMonth
-                    ? availableMonths.find(m => m.value === selectedMonth)?.label || 'Select Month'
-                    : 'All Months'}
+                    ? availableMonths.find(m => m.value === selectedMonth)?.label || t('selectMonth')
+                    : t('allMonths')}
                 </Text>
                 <Text style={styles.filterButtonIcon}>▼</Text>
               </TouchableOpacity>
@@ -293,7 +300,7 @@ const DonationsScreen = () => {
           {/* Clear filters button */}
           {hasActiveFilters && (
             <Button
-              title="Clear All Filters"
+              title={t('clearAllFilters')}
               onPress={clearFilters}
               variant="secondary"
               size="small"
@@ -306,15 +313,15 @@ const DonationsScreen = () => {
       {/* Donations List */}
       {filteredDonations.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>No donations found</Text>
+          <Text style={styles.emptyTitle}>{t('noDonationsFound')}</Text>
           <Text style={styles.emptyMessage}>
             {hasActiveFilters
-              ? 'Try adjusting your filters'
-              : 'Start by adding your first donation'}
+              ? t('tryAdjustingFilters')
+              : t('noDonationsMessage')}
           </Text>
           {hasActiveFilters && (
             <Button
-              title="Clear Filters"
+              title={t('clearFilters')}
               onPress={clearFilters}
               variant="secondary"
               size="small"
@@ -327,31 +334,48 @@ const DonationsScreen = () => {
           data={filteredDonations}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => (
-            <Card>
-              <View style={styles.donationHeader}>
-                <View style={styles.donationInfo}>
-                  <Text style={styles.donorName}>
-                    {item.donor?.name || 'Unknown Donor'}
-                  </Text>
-                  <Text style={styles.projectName}>
-                    {item.project?.name || 'Unknown Project'}
-                  </Text>
-                  <Text style={styles.date}>{formatDate(item.date)}</Text>
-                  {item.month && (
-                    <Text style={styles.monthBadge}>
-                      {new Date(item.month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                    </Text>
-                  )}
-                  {item.notes && (
-                    <Text style={styles.notes}>{item.notes}</Text>
-                  )}
-                </View>
-                <View style={styles.amountContainer}>
-                  <Text style={styles.amount}>{formatCurrency(item.amount)}</Text>
+          renderItem={({ item, index }) => (
+            <TouchableOpacity activeOpacity={0.9}>
+              <View style={styles.donationCard}>
+                <View style={[styles.donationColorBar, { backgroundColor: index % 3 === 0 ? '#4CAF50' : index % 3 === 1 ? '#2196F3' : '#FF9800' }]} />
+                <View style={styles.donationContent}>
+                  <View style={styles.donationHeader}>
+                    <View style={styles.donationInfo}>
+                      <View style={styles.donorRow}>
+                        <Text style={styles.donorIcon}>👤</Text>
+                        <Text style={styles.donorName}>
+                          {item.donor?.name || t('unknownDonor')}
+                        </Text>
+                      </View>
+                      <View style={styles.projectRow}>
+                        <Text style={styles.projectIcon}>🎯</Text>
+                        <Text style={styles.projectName}>
+                          {item.project?.name || t('unknownProject')}
+                        </Text>
+                      </View>
+                      <View style={styles.dateRow}>
+                        <Text style={styles.dateIcon}>📅</Text>
+                        <Text style={styles.date}>{formatDate(item.date)}</Text>
+                      </View>
+                      {item.month && (
+                        <View style={styles.monthBadgeContainer}>
+                          <Text style={styles.monthBadge}>
+                            {new Date(item.month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                          </Text>
+                        </View>
+                      )}
+                      {item.notes && (
+                        <Text style={styles.notes}>{item.notes}</Text>
+                      )}
+                    </View>
+                    <View style={styles.amountContainer}>
+                      <Text style={styles.amountLabel}>Amount</Text>
+                      <Text style={styles.amount}>{formatCurrency(item.amount)}</Text>
+                    </View>
+                  </View>
                 </View>
               </View>
-            </Card>
+            </TouchableOpacity>
           )}
         />
       )}
@@ -365,87 +389,178 @@ const DonationsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#F0F4F8',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F0F4F8',
+  },
+  summaryCardGradient: {
+    margin: 16,
+    marginBottom: 12,
+    borderRadius: 20,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#667eea',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   summaryCard: {
-    margin: 16,
-    marginBottom: 8,
-    backgroundColor: '#E8F5E9',
+    backgroundColor: '#667eea',
     alignItems: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+  },
+  summaryIcon: {
+    fontSize: 48,
+    marginBottom: 8,
   },
   summaryLabel: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 16,
+    color: '#FFFFFF',
     marginBottom: 8,
+    fontWeight: '600',
+    opacity: 0.9,
   },
   summaryValue: {
-    fontSize: 32,
+    fontSize: 40,
     fontWeight: '700',
-    color: '#4CAF50',
-    marginBottom: 4,
+    color: '#FFFFFF',
+    marginBottom: 6,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   summaryCount: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 15,
+    color: '#FFFFFF',
+    fontWeight: '500',
+    opacity: 0.85,
   },
   filterToggleContainer: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    paddingBottom: 8,
-    gap: 8,
+    paddingBottom: 12,
+    gap: 12,
   },
   filterToggleButton: {
     flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   filterToggleButtonActive: {
-    borderColor: '#2196F3',
     backgroundColor: '#E3F2FD',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#2196F3',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
+  },
+  filterIcon: {
+    fontSize: 18,
+    marginRight: 8,
   },
   filterToggleText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#666',
+    color: '#333',
+    flex: 1,
   },
   filterToggleTextActive: {
     color: '#2196F3',
   },
-  addButtonSmall: {
-    paddingHorizontal: 16,
+  filterArrow: {
+    fontSize: 12,
+    color: '#999',
+    marginLeft: 8,
+  },
+  addButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#4CAF50',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  addButtonIcon: {
+    fontSize: 32,
+    color: '#FFFFFF',
+    fontWeight: '300',
   },
   filtersContainer: {
     backgroundColor: '#FFFFFF',
     marginHorizontal: 16,
-    marginBottom: 8,
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    marginBottom: 12,
+    padding: 16,
+    borderRadius: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   filterItem: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
   filterLabel: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
-    color: '#666',
-    marginBottom: 6,
+    color: '#555',
+    marginBottom: 8,
   },
   searchInput: {
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 14,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 15,
     borderWidth: 1,
     borderColor: '#E0E0E0',
     color: '#333',
@@ -454,29 +569,55 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 8,
-    padding: 10,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 14,
     borderWidth: 1,
     borderColor: '#E0E0E0',
   },
   filterButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#333',
+    fontWeight: '500',
   },
   filterButtonIcon: {
     fontSize: 12,
     color: '#999',
   },
   clearFiltersButton: {
-    marginTop: 4,
+    marginTop: 8,
   },
   clearFiltersButtonEmpty: {
-    marginTop: 12,
+    marginTop: 16,
   },
   listContent: {
     padding: 16,
     paddingTop: 8,
+  },
+  donationCard: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    marginBottom: 12,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  donationColorBar: {
+    width: 5,
+  },
+  donationContent: {
+    flex: 1,
+    padding: 16,
   },
   donationHeader: {
     flexDirection: 'row',
@@ -484,44 +625,85 @@ const styles = StyleSheet.create({
   },
   donationInfo: {
     flex: 1,
-    marginRight: 12,
+    marginRight: 16,
+  },
+  donorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  donorIcon: {
+    fontSize: 16,
+    marginRight: 8,
   },
   donorName: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
-    color: '#333',
-    marginBottom: 4,
+    color: '#1a1a1a',
+    flex: 1,
+  },
+  projectRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  projectIcon: {
+    fontSize: 14,
+    marginRight: 8,
   },
   projectName: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+    fontSize: 15,
+    color: '#555',
+    fontWeight: '500',
+    flex: 1,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  dateIcon: {
+    fontSize: 12,
+    marginRight: 8,
   },
   date: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: 13,
+    color: '#888',
+  },
+  monthBadgeContainer: {
+    marginTop: 4,
   },
   monthBadge: {
     fontSize: 12,
     color: '#2196F3',
     backgroundColor: '#E3F2FD',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginTop: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    overflow: 'hidden',
     alignSelf: 'flex-start',
+    fontWeight: '600',
   },
   notes: {
     fontSize: 14,
     color: '#666',
-    marginTop: 8,
+    marginTop: 10,
     fontStyle: 'italic',
+    lineHeight: 20,
   },
   amountContainer: {
     justifyContent: 'center',
+    alignItems: 'flex-end',
+  },
+  amountLabel: {
+    fontSize: 11,
+    color: '#999',
+    marginBottom: 4,
+    fontWeight: '600',
+    textTransform: 'uppercase',
   },
   amount: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     color: '#4CAF50',
   },
@@ -529,56 +711,69 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    padding: 40,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   emptyMessage: {
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+    lineHeight: 24,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'flex-end',
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     maxHeight: '70%',
-    paddingBottom: 24,
+    paddingBottom: 32,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#F0F0F0',
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
-    color: '#333',
+    color: '#1a1a1a',
   },
   closeButton: {
-    fontSize: 24,
-    color: '#666',
+    fontSize: 28,
+    color: '#999',
     paddingHorizontal: 8,
+    lineHeight: 28,
   },
   modalItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: 18,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: '#F5F5F5',
   },
   modalItemSelected: {
     backgroundColor: '#E3F2FD',
@@ -586,21 +781,22 @@ const styles = StyleSheet.create({
   modalItemText: {
     fontSize: 16,
     color: '#333',
+    fontWeight: '500',
   },
   modalItemTextSelected: {
     fontWeight: '600',
     color: '#2196F3',
   },
   checkmark: {
-    fontSize: 18,
+    fontSize: 20,
     color: '#2196F3',
     fontWeight: '700',
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#999',
     textAlign: 'center',
-    padding: 24,
+    padding: 32,
   },
 });
 

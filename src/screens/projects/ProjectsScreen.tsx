@@ -12,7 +12,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../../contexts/AppContext';
 import { Card, Button, StatusBadge, EmptyState } from '../../components';
 import { RootStackParamList } from '../../types';
-import { searchProjects, getProjectStats, formatCurrency } from '../../utils/helpers';
+import { searchProjects, getProjectStats, formatCurrency, t } from '../../utils/helpers';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -41,9 +41,9 @@ const ProjectsScreen = () => {
   if (projects.length === 0) {
     return (
       <EmptyState
-        title="No Projects Yet"
-        message="Create your first project to start receiving donations."
-        actionTitle="Add Project"
+        title={t('noProjects')}
+        message={t('noProjectsMessage')}
+        actionTitle={t('addProject')}
         onAction={() => navigation.navigate('AddProject', {})}
       />
     );
@@ -60,7 +60,7 @@ const ProjectsScreen = () => {
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search projects..."
+          placeholder={t('search')}
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholderTextColor="#999"
@@ -70,7 +70,7 @@ const ProjectsScreen = () => {
       {/* Add Button */}
       <View style={styles.addButtonContainer}>
         <Button
-          title="+ Add Project"
+          title={t('addProject')}
           onPress={() => navigation.navigate('AddProject', {})}
           variant="primary"
           style={styles.addButton}
@@ -114,7 +114,7 @@ const ProjectsScreen = () => {
                     {formatCurrency(item.currentAmount)}
                   </Text>
                   <Text style={styles.targetAmount}>
-                    of {formatCurrency(item.targetAmount)} goal
+                    {t('of')} {formatCurrency(item.targetAmount)}
                   </Text>
                 </View>
               </View>
@@ -123,11 +123,11 @@ const ProjectsScreen = () => {
               <View style={styles.statsRow}>
                 <View style={styles.stat}>
                   <Text style={styles.statValue}>{item.donorCount}</Text>
-                  <Text style={styles.statLabel}>Donors</Text>
+                  <Text style={styles.statLabel}>{t('donors')}</Text>
                 </View>
                 <View style={styles.stat}>
                   <Text style={styles.statValue}>{item.donationCount}</Text>
-                  <Text style={styles.statLabel}>Donations</Text>
+                  <Text style={styles.statLabel}>{t('donations')}</Text>
                 </View>
               </View>
             </Card>
@@ -135,8 +135,8 @@ const ProjectsScreen = () => {
         }}
         ListEmptyComponent={
           <EmptyState
-            title="No Projects Found"
-            message="Try adjusting your search criteria."
+            title={t('noProjects')}
+            message={t('tryAdjustingFilters')}
           />
         }
       />

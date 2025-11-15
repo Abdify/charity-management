@@ -16,7 +16,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useApp } from '../../contexts/AppContext';
 import { Input, Button, Card } from '../../components';
 import { RootStackParamList, Donor, Project, DonationType } from '../../types';
-import { formatCurrency } from '../../utils/helpers';
+import { formatCurrency, t } from '../../utils/helpers';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -64,22 +64,22 @@ const AddDonationScreen = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (!selectedDonor) {
-      newErrors.donor = 'Please select a donor';
+      newErrors.donor = t('selectDonorRequired');
     }
 
     if (!selectedProject) {
-      newErrors.project = 'Please select a project';
+      newErrors.project = t('selectProjectRequired');
     }
 
     if (!amount.trim()) {
-      newErrors.amount = 'Amount is required';
+      newErrors.amount = t('amountRequired');
     } else if (isNaN(Number(amount)) || Number(amount) <= 0) {
-      newErrors.amount = 'Please enter a valid amount';
+      newErrors.amount = t('validAmountRequired');
     }
 
     // Check month for monthly donations
     if (isMonthlyProject && !selectedMonth) {
-      newErrors.month = 'Please select a month for monthly donation';
+      newErrors.month = t('selectMonthRequired');
     }
 
     setErrors(newErrors);
@@ -106,9 +106,9 @@ const AddDonationScreen = () => {
         notes: notes.trim() || undefined,
       });
 
-      Alert.alert('Success', 'Donation added successfully!', [
+      Alert.alert(t('success'), t('donationAddedSuccessfully'), [
         {
-          text: 'Add Another',
+          text: t('addAnother'),
           onPress: () => {
             // Reset form
             setSelectedDonor(null);
@@ -121,12 +121,12 @@ const AddDonationScreen = () => {
           },
         },
         {
-          text: 'Done',
+          text: t('done'),
           onPress: () => navigation.goBack(),
         },
       ]);
     } catch (error) {
-      Alert.alert('Error', 'Failed to add donation. Please try again.');
+      Alert.alert(t('error'), 'Failed to add donation. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -142,7 +142,7 @@ const AddDonationScreen = () => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Donor</Text>
+            <Text style={styles.modalTitle}>{t('selectDonor')}</Text>
             <TouchableOpacity onPress={() => setShowDonorModal(false)}>
               <Text style={styles.closeButton}>✕</Text>
             </TouchableOpacity>
@@ -164,11 +164,11 @@ const AddDonationScreen = () => {
               </TouchableOpacity>
             )}
             ListEmptyComponent={
-              <Text style={styles.emptyText}>No active donors available</Text>
+              <Text style={styles.emptyText}>{t('noActiveDonors')}</Text>
             }
           />
           <Button
-            title="Add New Donor"
+            title={t('addDonor')}
             onPress={() => {
               setShowDonorModal(false);
               navigation.navigate('AddDonor', {});
@@ -191,7 +191,7 @@ const AddDonationScreen = () => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Project</Text>
+            <Text style={styles.modalTitle}>{t('selectProject')}</Text>
             <TouchableOpacity onPress={() => setShowProjectModal(false)}>
               <Text style={styles.closeButton}>✕</Text>
             </TouchableOpacity>
@@ -216,7 +216,7 @@ const AddDonationScreen = () => {
               >
                 <Text style={styles.modalItemName}>
                   {item.name}
-                  {item.donationType === DonationType.MONTHLY && ' (Monthly)'}
+                  {item.donationType === DonationType.MONTHLY && ` (${t('monthly')})`}
                 </Text>
                 <Text style={styles.modalItemDetail}>
                   {formatCurrency(item.currentAmount)} / {formatCurrency(item.targetAmount)}
@@ -224,11 +224,11 @@ const AddDonationScreen = () => {
               </TouchableOpacity>
             )}
             ListEmptyComponent={
-              <Text style={styles.emptyText}>No active projects available</Text>
+              <Text style={styles.emptyText}>{t('noActiveProjects')}</Text>
             }
           />
           <Button
-            title="Add New Project"
+            title={t('addProject')}
             onPress={() => {
               setShowProjectModal(false);
               navigation.navigate('AddProject', {});
@@ -251,7 +251,7 @@ const AddDonationScreen = () => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Month</Text>
+            <Text style={styles.modalTitle}>{t('selectMonth')}</Text>
             <TouchableOpacity onPress={() => setShowMonthModal(false)}>
               <Text style={styles.closeButton}>✕</Text>
             </TouchableOpacity>
@@ -281,7 +281,7 @@ const AddDonationScreen = () => {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Donor Selection */}
       <View style={styles.section}>
-        <Text style={styles.label}>Donor *</Text>
+        <Text style={styles.label}>{t('donor')} *</Text>
         <TouchableOpacity
           style={[
             styles.selectionButton,
@@ -295,7 +295,7 @@ const AddDonationScreen = () => {
               <Text style={styles.selectedSubtext}>{selectedDonor.phoneNumber}</Text>
             </View>
           ) : (
-            <Text style={styles.placeholderText}>Select a donor</Text>
+            <Text style={styles.placeholderText}>{t('selectDonor')}</Text>
           )}
         </TouchableOpacity>
         {errors.donor && <Text style={styles.errorText}>{errors.donor}</Text>}
@@ -303,7 +303,7 @@ const AddDonationScreen = () => {
 
       {/* Project Selection */}
       <View style={styles.section}>
-        <Text style={styles.label}>Project *</Text>
+        <Text style={styles.label}>{t('project')} *</Text>
         <TouchableOpacity
           style={[
             styles.selectionButton,
@@ -319,7 +319,7 @@ const AddDonationScreen = () => {
               </Text>
             </View>
           ) : (
-            <Text style={styles.placeholderText}>Select a project</Text>
+            <Text style={styles.placeholderText}>{t('selectProject')}</Text>
           )}
         </TouchableOpacity>
         {errors.project && <Text style={styles.errorText}>{errors.project}</Text>}
@@ -327,10 +327,10 @@ const AddDonationScreen = () => {
 
       {/* Amount */}
       <Input
-        label="Amount *"
+        label={`${t('amount')} *`}
         value={amount}
         onChangeText={setAmount}
-        placeholder="Enter amount"
+        placeholder={t('enterAmount')}
         keyboardType="numeric"
         error={errors.amount}
       />
@@ -338,7 +338,7 @@ const AddDonationScreen = () => {
       {/* Month (only for monthly projects) */}
       {isMonthlyProject && (
         <View style={styles.section}>
-          <Text style={styles.label}>Month *</Text>
+          <Text style={styles.label}>{t('month')} *</Text>
           <TouchableOpacity
             style={[
               styles.selectionButton,
@@ -351,7 +351,7 @@ const AddDonationScreen = () => {
                 {monthOptions.find(m => m.value === selectedMonth)?.label || selectedMonth}
               </Text>
             ) : (
-              <Text style={styles.placeholderText}>Select donation month</Text>
+              <Text style={styles.placeholderText}>{t('selectDonationMonth')}</Text>
             )}
           </TouchableOpacity>
           {errors.month && <Text style={styles.errorText}>{errors.month}</Text>}
@@ -360,7 +360,7 @@ const AddDonationScreen = () => {
 
       {/* Date */}
       <View style={styles.section}>
-        <Text style={styles.label}>Date *</Text>
+        <Text style={styles.label}>{t('date')} *</Text>
         <TouchableOpacity
           style={styles.dateButton}
           onPress={() => setShowDatePicker(true)}
@@ -384,10 +384,10 @@ const AddDonationScreen = () => {
 
       {/* Notes */}
       <Input
-        label="Notes (Optional)"
+        label={`${t('notes')} (${t('optional')})`}
         value={notes}
         onChangeText={setNotes}
-        placeholder="Add any notes about this donation"
+        placeholder={t('additionalNotes')}
         multiline
         numberOfLines={3}
         style={styles.notesInput}
@@ -396,10 +396,10 @@ const AddDonationScreen = () => {
       {/* Summary Card */}
       {selectedDonor && selectedProject && amount && !isNaN(Number(amount)) && (
         <Card style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Summary</Text>
+          <Text style={styles.summaryTitle}>{t('summary')}</Text>
           <Text style={styles.summaryText}>
-            <Text style={styles.summaryBold}>{selectedDonor.name}</Text> is donating{' '}
-            <Text style={styles.summaryBold}>{formatCurrency(Number(amount))}</Text> to{' '}
+            <Text style={styles.summaryBold}>{selectedDonor.name}</Text> {t('isDonating')}{' '}
+            <Text style={styles.summaryBold}>{formatCurrency(Number(amount))}</Text> {t('to')}{' '}
             <Text style={styles.summaryBold}>{selectedProject.name}</Text>
           </Text>
         </Card>
@@ -407,7 +407,7 @@ const AddDonationScreen = () => {
 
       {/* Save Button */}
       <Button
-        title="Save Donation"
+        title={t('saveDonation')}
         onPress={handleSave}
         loading={loading}
         variant="success"

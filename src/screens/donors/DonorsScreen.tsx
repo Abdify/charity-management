@@ -13,7 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../../contexts/AppContext';
 import { Card, Button, StatusBadge, EmptyState } from '../../components';
 import { RootStackParamList } from '../../types';
-import { searchDonors, getDonorStats, formatCurrency } from '../../utils/helpers';
+import { searchDonors, getDonorStats, formatCurrency, t } from '../../utils/helpers';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -42,9 +42,9 @@ const DonorsScreen = () => {
   if (donors.length === 0) {
     return (
       <EmptyState
-        title="No Donors Yet"
-        message="Start by adding your first donor to track donations."
-        actionTitle="Add Donor"
+        title={t('noDonors')}
+        message={t('noDonorsMessage')}
+        actionTitle={t('addDonor')}
         onAction={() => navigation.navigate('AddDonor', {})}
       />
     );
@@ -56,7 +56,7 @@ const DonorsScreen = () => {
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search donors..."
+          placeholder={t('searchByDonorName')}
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholderTextColor="#999"
@@ -66,7 +66,7 @@ const DonorsScreen = () => {
       {/* Add Button */}
       <View style={styles.addButtonContainer}>
         <Button
-          title="+ Add Donor"
+          title={t('addDonor')}
           onPress={() => navigation.navigate('AddDonor', {})}
           variant="primary"
           style={styles.addButton}
@@ -89,19 +89,19 @@ const DonorsScreen = () => {
             <View style={styles.statsRow}>
               <View style={styles.stat}>
                 <Text style={styles.statValue}>{formatCurrency(item.totalDonations)}</Text>
-                <Text style={styles.statLabel}>Total Donated</Text>
+                <Text style={styles.statLabel}>{t('totalDonated')}</Text>
               </View>
               <View style={styles.stat}>
                 <Text style={styles.statValue}>{item.donationCount}</Text>
-                <Text style={styles.statLabel}>Donations</Text>
+                <Text style={styles.statLabel}>{t('donations')}</Text>
               </View>
             </View>
           </Card>
         )}
         ListEmptyComponent={
           <EmptyState
-            title="No Donors Found"
-            message="Try adjusting your search criteria."
+            title={t('noDonors')}
+            message={t('tryAdjustingFilters')}
           />
         }
       />

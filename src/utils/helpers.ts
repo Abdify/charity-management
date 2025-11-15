@@ -1,26 +1,36 @@
 import { Donation, Donor, Project, DonorWithStats, ProjectWithStats } from '../types';
+import { bn, TranslationKey } from '../translations/bn';
+
+// Translation helper
+export const t = (key: TranslationKey): string => {
+  return bn[key] || key;
+};
 
 // Generate unique ID
 export const generateId = (): string => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
-// Format currency
+// Format currency in Bangladeshi Taka
 export const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
+  // Format number with Bengali locale
+  const formatted = new Intl.NumberFormat('bn-BD').format(amount);
+  return `৳${formatted}`;
 };
 
-// Format date
+// Format date in Bengali
 export const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  const day = date.getDate();
+  const month = date.getMonth();
+  const year = date.getFullYear();
+
+  const months = [
+    'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+    'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+  ];
+
+  return `${day} ${months[month]}, ${year}`;
 };
 
 // Format date and time

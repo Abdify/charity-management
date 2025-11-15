@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { DonorStatus, ProjectStatus } from '../types';
+import { t } from '../utils/helpers';
 
 interface StatusBadgeProps {
   status: DonorStatus | ProjectStatus;
@@ -27,15 +28,15 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, style }) => {
   const getStatusText = () => {
     switch (status) {
       case DonorStatus.ACTIVE:
-        return 'Active';
+        return t('active');
       case DonorStatus.INACTIVE:
-        return 'Inactive';
+        return t('inactive');
       case ProjectStatus.ACTIVE:
-        return 'Active';
+        return t('active');
       case ProjectStatus.COMPLETED:
-        return 'Completed';
+        return t('completed');
       case ProjectStatus.ON_HOLD:
-        return 'On Hold';
+        return t('onHold');
       default:
         return status;
     }

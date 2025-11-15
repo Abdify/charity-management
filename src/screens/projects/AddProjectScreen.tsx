@@ -14,6 +14,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useApp } from '../../contexts/AppContext';
 import { Input, Button } from '../../components';
 import { RootStackParamList, ProjectStatus, DonationType } from '../../types';
+import { t } from '../../utils/helpers';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type AddProjectRouteProp = RouteProp<RootStackParamList, 'AddProject'>;
@@ -55,17 +56,17 @@ const AddProjectScreen = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (!name.trim()) {
-      newErrors.name = 'Project name is required';
+      newErrors.name = t('projectNameRequired');
     }
 
     if (!description.trim()) {
-      newErrors.description = 'Description is required';
+      newErrors.description = t('descriptionRequired');
     }
 
     if (!targetAmount.trim()) {
-      newErrors.targetAmount = 'Target amount is required';
+      newErrors.targetAmount = t('targetAmountRequired');
     } else if (isNaN(Number(targetAmount)) || Number(targetAmount) <= 0) {
-      newErrors.targetAmount = 'Please enter a valid amount';
+      newErrors.targetAmount = t('validAmountRequired');
     }
 
     setErrors(newErrors);
@@ -102,7 +103,7 @@ const AddProjectScreen = () => {
       }
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Error', 'Failed to save project. Please try again.');
+      Alert.alert(t('error'), 'Failed to save project. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -110,12 +111,12 @@ const AddProjectScreen = () => {
 
   const handleDelete = () => {
     Alert.alert(
-      'Delete Project',
-      'Are you sure you want to delete this project? This action cannot be undone.',
+      t('deleteProject'),
+      t('deleteProjectMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('delete'),
           style: 'destructive',
           onPress: async () => {
             setLoading(true);
@@ -123,7 +124,7 @@ const AddProjectScreen = () => {
               await deleteProject(projectId);
               navigation.goBack();
             } catch (error) {
-              Alert.alert('Error', 'Failed to delete project. Please try again.');
+              Alert.alert(t('error'), 'Failed to delete project. Please try again.');
             } finally {
               setLoading(false);
             }
@@ -136,18 +137,18 @@ const AddProjectScreen = () => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Input
-        label="Project Name *"
+        label={`${t('projectName')} *`}
         value={name}
         onChangeText={setName}
-        placeholder="Enter project name"
+        placeholder={t('enterProjectName')}
         error={errors.name}
       />
 
       <Input
-        label="Description *"
+        label={`${t('description')} *`}
         value={description}
         onChangeText={setDescription}
-        placeholder="Enter project description"
+        placeholder={t('enterDescription')}
         multiline
         numberOfLines={4}
         style={styles.descriptionInput}
@@ -155,17 +156,17 @@ const AddProjectScreen = () => {
       />
 
       <Input
-        label="Target Amount *"
+        label={`${t('targetAmount')} *`}
         value={targetAmount}
         onChangeText={setTargetAmount}
-        placeholder="Enter target amount"
+        placeholder={t('enterTargetAmount')}
         keyboardType="numeric"
         error={errors.targetAmount}
       />
 
       {/* Start Date */}
       <View style={styles.dateContainer}>
-        <Text style={styles.label}>Start Date *</Text>
+        <Text style={styles.label}>{t('startDate')} *</Text>
         <TouchableOpacity
           style={styles.dateButton}
           onPress={() => setShowStartDatePicker(true)}
@@ -189,18 +190,18 @@ const AddProjectScreen = () => {
 
       {/* End Date */}
       <View style={styles.dateContainer}>
-        <Text style={styles.label}>End Date (Optional)</Text>
+        <Text style={styles.label}>{t('endDate')} ({t('optional')})</Text>
         <TouchableOpacity
           style={styles.dateButton}
           onPress={() => setShowEndDatePicker(true)}
         >
           <Text style={styles.dateText}>
-            {endDate ? endDate.toLocaleDateString() : 'Not set'}
+            {endDate ? endDate.toLocaleDateString() : t('notSet')}
           </Text>
         </TouchableOpacity>
         {endDate && (
           <Button
-            title="Clear End Date"
+            title={t('cancel')}
             onPress={() => setEndDate(undefined)}
             variant="secondary"
             size="small"
@@ -224,7 +225,7 @@ const AddProjectScreen = () => {
 
       {/* Donation Type */}
       <View style={styles.statusContainer}>
-        <Text style={styles.label}>Donation Type *</Text>
+        <Text style={styles.label}>{t('donationType')} *</Text>
         <View style={styles.donationTypeButtons}>
           <TouchableOpacity
             style={[
@@ -239,7 +240,7 @@ const AddProjectScreen = () => {
                 donationType === DonationType.ONE_TIME && styles.statusButtonTextActive,
               ]}
             >
-              One-time
+              {t('oneTime')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -255,7 +256,7 @@ const AddProjectScreen = () => {
                 donationType === DonationType.MONTHLY && styles.statusButtonTextActive,
               ]}
             >
-              Monthly
+              {t('monthly')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -263,7 +264,7 @@ const AddProjectScreen = () => {
 
       {/* Status */}
       <View style={styles.statusContainer}>
-        <Text style={styles.label}>Status</Text>
+        <Text style={styles.label}>{t('status')}</Text>
         <View style={styles.statusButtons}>
           <TouchableOpacity
             style={[
@@ -278,7 +279,7 @@ const AddProjectScreen = () => {
                 status === ProjectStatus.ACTIVE && styles.statusButtonTextActive,
               ]}
             >
-              Active
+              {t('active')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -294,7 +295,7 @@ const AddProjectScreen = () => {
                 status === ProjectStatus.ON_HOLD && styles.statusButtonTextActive,
               ]}
             >
-              On Hold
+              {t('onHold')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -310,14 +311,14 @@ const AddProjectScreen = () => {
                 status === ProjectStatus.COMPLETED && styles.statusButtonTextActive,
               ]}
             >
-              Completed
+              {t('completed')}
             </Text>
           </TouchableOpacity>
         </View>
       </View>
 
       <Button
-        title={isEditing ? 'Update Project' : 'Add Project'}
+        title={isEditing ? t('updateProject') : t('addProject')}
         onPress={handleSave}
         loading={loading}
         variant="primary"
@@ -327,7 +328,7 @@ const AddProjectScreen = () => {
 
       {isEditing && (
         <Button
-          title="Delete Project"
+          title={t('deleteProject')}
           onPress={handleDelete}
           variant="danger"
           size="large"

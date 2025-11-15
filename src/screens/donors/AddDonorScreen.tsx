@@ -12,6 +12,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useApp } from '../../contexts/AppContext';
 import { Input, Button } from '../../components';
 import { RootStackParamList, DonorStatus } from '../../types';
+import { t } from '../../utils/helpers';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type AddDonorRouteProp = RouteProp<RootStackParamList, 'AddDonor'>;
@@ -55,21 +56,21 @@ const AddDonorScreen = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (!name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = t('nameRequired');
     }
 
     if (!phoneNumber.trim()) {
-      newErrors.phoneNumber = 'Phone number is required';
+      newErrors.phoneNumber = t('phoneRequired');
     }
 
     if (!location.trim()) {
-      newErrors.location = 'Location is required';
+      newErrors.location = t('locationRequired');
     }
 
     if (!order.trim()) {
-      newErrors.order = 'Order is required';
+      newErrors.order = t('orderRequired');
     } else if (isNaN(Number(order)) || Number(order) < 1) {
-      newErrors.order = 'Please enter a valid order number (1 or greater)';
+      newErrors.order = t('validOrderRequired');
     }
 
     setErrors(newErrors);
@@ -104,7 +105,7 @@ const AddDonorScreen = () => {
       }
       navigation.goBack();
     } catch (error) {
-      Alert.alert('Error', 'Failed to save donor. Please try again.');
+      Alert.alert(t('error'), 'Failed to save donor. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -112,12 +113,12 @@ const AddDonorScreen = () => {
 
   const handleDelete = () => {
     Alert.alert(
-      'Delete Donor',
-      'Are you sure you want to delete this donor? This action cannot be undone.',
+      t('deleteDonor'),
+      t('deleteDonorMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('delete'),
           style: 'destructive',
           onPress: async () => {
             setLoading(true);
@@ -125,7 +126,7 @@ const AddDonorScreen = () => {
               await deleteDonor(donorId);
               navigation.goBack();
             } catch (error) {
-              Alert.alert('Error', 'Failed to delete donor. Please try again.');
+              Alert.alert(t('error'), 'Failed to delete donor. Please try again.');
             } finally {
               setLoading(false);
             }
@@ -138,51 +139,51 @@ const AddDonorScreen = () => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Input
-        label="Name *"
+        label={`${t('donorName')} *`}
         value={name}
         onChangeText={setName}
-        placeholder="Enter donor name"
+        placeholder={t('enterDonorName')}
         error={errors.name}
       />
 
       <Input
-        label="Phone Number *"
+        label={`${t('phoneNumber')} *`}
         value={phoneNumber}
         onChangeText={setPhoneNumber}
-        placeholder="Enter phone number"
+        placeholder={t('enterPhoneNumber')}
         keyboardType="phone-pad"
         error={errors.phoneNumber}
       />
 
       <Input
-        label="Location *"
+        label={`${t('location')} *`}
         value={location}
         onChangeText={setLocation}
-        placeholder="Enter location"
+        placeholder={t('enterLocation')}
         error={errors.location}
       />
 
       <Input
-        label="Order *"
+        label={`${t('order')} *`}
         value={order}
         onChangeText={setOrder}
-        placeholder="Enter display order"
+        placeholder={t('enterDisplayOrder')}
         keyboardType="numeric"
         error={errors.order}
       />
 
       <Input
-        label="Notes (Optional)"
+        label={`${t('notes')} (${t('optional')})`}
         value={notes}
         onChangeText={setNotes}
-        placeholder="Enter any additional notes"
+        placeholder={t('additionalNotes')}
         multiline
         numberOfLines={4}
         style={styles.notesInput}
       />
 
       <View style={styles.statusContainer}>
-        <Text style={styles.label}>Status</Text>
+        <Text style={styles.label}>{t('status')}</Text>
         <View style={styles.statusButtons}>
           <TouchableOpacity
             style={[
@@ -197,7 +198,7 @@ const AddDonorScreen = () => {
                 status === DonorStatus.ACTIVE && styles.statusButtonTextActive,
               ]}
             >
-              Active
+              {t('active')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -213,14 +214,14 @@ const AddDonorScreen = () => {
                 status === DonorStatus.INACTIVE && styles.statusButtonTextActive,
               ]}
             >
-              Inactive
+              {t('inactive')}
             </Text>
           </TouchableOpacity>
         </View>
       </View>
 
       <Button
-        title={isEditing ? 'Update Donor' : 'Add Donor'}
+        title={isEditing ? t('updateDonor') : t('addDonor')}
         onPress={handleSave}
         loading={loading}
         variant="primary"
@@ -230,7 +231,7 @@ const AddDonorScreen = () => {
 
       {isEditing && (
         <Button
-          title="Delete Donor"
+          title={t('deleteDonor')}
           onPress={handleDelete}
           variant="danger"
           size="large"
