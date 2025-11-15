@@ -159,18 +159,21 @@ The app will automatically:
    - Choose "Scoped access"
    - Choose "Full Dropbox" access
    - Give your app a name (e.g., "Charity Manager")
-3. Generate an access token in the app settings
-4. From the Dashboard, tap "Settings" in the Dropbox Cloud Backup section
-5. Paste your access token
-6. Tap "Connect to Dropbox"
-7. Your token will be saved securely for future backups
+3. In the app settings, go to the "Permissions" tab and enable these scopes:
+   - `files.content.write`
+   - `files.content.read`
+4. Generate an access token in the "Settings" tab
+5. From the app Dashboard, tap "Settings" in the Dropbox Cloud Backup section
+6. Paste your access token
+7. Tap "Test Connection" to verify
+8. Tap "Connect" - your token will be saved securely
 
 #### Creating a Backup
 1. Go to the Dashboard
 2. Scroll to "Dropbox Cloud Backup" section
 3. Ensure you're connected to Dropbox (green status badge)
 4. Tap "Backup to Dropbox"
-5. Your data will be uploaded to Dropbox
+5. Your data will be uploaded to Dropbox as `charity_backup.json`
 6. Previous backups are automatically replaced
 
 #### Restoring from Backup
@@ -179,34 +182,9 @@ The app will automatically:
 3. Ensure you're connected to Dropbox
 4. Tap "Restore from Dropbox"
 5. Confirm the action
-6. Data will be downloaded and restored from Dropbox
+6. All data will be downloaded and restored from Dropbox
 
-**Note**: Only one backup file is kept on Dropbox at a time. Each new backup replaces the previous one.
-
-#### Setting Up Dropbox
-1. Go to [Dropbox App Console](https://www.dropbox.com/developers/apps)
-2. From the Dashboard, tap "Settings" in the Dropbox Cloud Backup section
-3. Create a new app (choose "Scoped access" and "Full Dropbox"), generate an access token, and paste it below
-4. Tap "Connect to Dropbox"
-5. Your credentials will be saved securely for future backups
-
-#### Creating a Backup
-1. Go to the Dashboard
-2. Scroll to "Dropbox Cloud Backup" section
-3. Ensure you're connected to Dropbox (green status badge)
-4. Tap "Backup to Dropbox"
-5. Your data will be uploaded to Dropbox
-6. Previous backups are automatically replaced
-
-#### Restoring from Backup
-1. Go to the Dashboard
-2. Scroll to "Dropbox Cloud Backup" section
-3. Ensure you're connected to Dropbox
-4. Tap "Restore from Dropbox"
-5. Confirm the action
-6. Data will be downloaded and restored from Dropbox
-
-**Note**: Only one backup file is kept on Dropbox at a time. Each new backup replaces the previous one.
+**Note**: Only one backup file is kept on Dropbox at a time. Each new backup replaces the previous one. The backup is stored at `/charity_backup.json` in your Dropbox.
 
 ## Data Models
 
